@@ -112,7 +112,7 @@ object Parameter {
       Parameter(
         rawValue = rawValue,
         name = parameterName,
-        parameterType = ParameterType.String,
+        parameterType = parameterType,
         modifier = modifier,
         prefix = prefix.getOrElse(Prefix.Equal),
         value = value

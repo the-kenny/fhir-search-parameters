@@ -8,6 +8,10 @@ class ParameterSpec extends FlatSpec with Matchers {
     Parameter.parse(ParameterType.String, "name=foo").get.rawValue shouldBe "name=foo"
   }
 
+  "The parse function" should "handle parameterType correctly" in {
+    Parameter.parse(ParameterType.String, "name=foo").get.parameterType shouldBe ParameterType.String
+  }
+
   "The parse function" should "parse the parameter name" in {
     Parameter.parse(ParameterType.String, "name=foo").get.name shouldBe "name"
   }
