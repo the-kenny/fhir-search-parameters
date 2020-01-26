@@ -6,38 +6,38 @@ import scala.util.Try
 import scala.util.Success
 import scala.util.Failure
 
-sealed class ParameterType(val supportedModifiers: Set[Modifier] = Set())
+sealed trait ParameterType
 
 object ParameterType {
-  case object Number extends ParameterType // Search parameter SHALL be a number (a whole number, or a decimal).
-  case object Date extends ParameterType // Search parameter is on a date/time. The date format is the standard XML format, though other formats may be supported.
-  case object String extends ParameterType(supportedModifiers = Set(Modifier.Exact, Modifier.Contains))
-  case object Token extends ParameterType(supportedModifiers = Set(Modifier.Text, Modifier.In, Modifier.Below, Modifier.Above, Modifier.NotIn))
-  case object Reference extends ParameterType(supportedModifiers = Set(Modifier.Identifier, Modifier.Above, Modifier.Below)) // A reference to another resource (Reference or canonical).
-  case object Composite extends ParameterType // A composite search parameter that combines a search on two values together.
-  case object Quantity extends ParameterType // A search parameter that searches on a quantity.
-  case object Uri extends ParameterType(supportedModifiers = Set(Modifier.Below, Modifier.Above)) // A search parameter that searches on a URI (RFC 3986).
-  case object Special extends ParameterType // Special logic applies to this parameter per the description of the search parameter.
+  case object Number extends ParameterType
+  case object Date extends ParameterType
+  case object String extends ParameterType
+  case object Token extends ParameterType
+  case object Reference extends ParameterType
+  case object Composite extends ParameterType
+  case object Quantity extends ParameterType
+  case object Uri extends ParameterType
+  case object Special extends ParameterType
 
   val all = Set[ParameterType](Number, Date, String, Token, Reference, Composite, Quantity, Uri, Special)
 }
 
-sealed class Modifier(val identifier: String) {
+sealed class Modifier(val identifier: String, supportedParameterTypes: Set[ParameterType]) {
   def isSupportedBy(parameterType: ParameterType): Boolean = {
-    parameterType.supportedModifiers.contains(this)
+    this.supportedParameterTypes.contains(parameterType)
   }
 }
 
 object Modifier {
   // case class Missing(shouldBeMissing: Boolean) extends Modifier("missing") // TODO
-  case object Exact extends Modifier("exact")
-  case object Contains extends Modifier("contains")
-  case object Text extends Modifier("text")
-  case object In extends Modifier("in")
-  case object Below extends Modifier("below")
-  case object Above extends Modifier("above")
-  case object NotIn extends Modifier("not-in")
-  case object Identifier extends Modifier("identifier")
+  case object Exact extends Modifier("exact", supportedParameterTypes = Set(ParameterType.String))
+  case object Contains extends Modifier("contains", supportedParameterTypes = Set(ParameterType.String))
+  case object Text extends Modifier("text", supportedParameterTypes = Set(ParameterType.Token))
+  case object In extends Modifier("in", supportedParameterTypes = Set(ParameterType.Token))
+  case object Below extends Modifier("below", supportedParameterTypes = Set(ParameterType.Reference, ParameterType.Token, ParameterType.Uri))
+  case object Above extends Modifier("above", supportedParameterTypes = Set(ParameterType.Reference, ParameterType.Token, ParameterType.Uri))
+  case object NotIn extends Modifier("not-in", supportedParameterTypes = Set(ParameterType.Token))
+  case object Identifier extends Modifier("identifier", supportedParameterTypes = Set(ParameterType.Reference))
   // case class ReferenceType(val resourceType: String) extends Modifier(resourceType) // TODO
 
   val all = Set[Modifier](Exact, Contains, Text, In, Below, Above, NotIn, Identifier)
