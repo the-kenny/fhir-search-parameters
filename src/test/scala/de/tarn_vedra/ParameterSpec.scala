@@ -15,13 +15,13 @@ class ParameterSpec extends FlatSpec with Matchers {
   "The parse function" should "handle modifiers" in {
     Parameter.parse(ParameterType.String, "name=foo").get.modifier shouldBe None
     Parameter.parse(ParameterType.String, "name:contains=foo").get.modifier shouldBe Some(Modifier.Contains)
-    Parameter.parse(ParameterType.String, "name:invalidModifier=foo").isFailure shouldBe true
+    Parameter.parse(ParameterType.String, "name:invalidModifier=foo").failed.get shouldBe a[UnknownModifierException]
   }
 
   "The parse function" should "reject unsupported modifiers for a given ParameterType" in {
-    Parameter.parse(ParameterType.Date, "birthDate:exact=2019-01-01").isFailure shouldBe true
-    Parameter.parse(ParameterType.String, "name:below=foo").isFailure shouldBe true
-    Parameter.parse(ParameterType.Number, "age:contains=42").isFailure shouldBe true
+    Parameter.parse(ParameterType.Date, "birthDate:exact=2019-01-01").failed.get shouldBe a[UnsupportedModifierException]
+    Parameter.parse(ParameterType.String, "name:below=foo").failed.get shouldBe a[UnsupportedModifierException]
+    Parameter.parse(ParameterType.Number, "age:contains=42").failed.get shouldBe a[UnsupportedModifierException]
   }
 
   "The parse function" should "handle prefixes" in {
@@ -35,7 +35,7 @@ class ParameterSpec extends FlatSpec with Matchers {
     Parameter.parse(ParameterType.String, "name=SomeName").get.prefix shouldBe Prefix.Equal
     Parameter.parse(ParameterType.String, "name=eqSomeName").get.prefix shouldBe Prefix.Equal
     // String parameters don't support `lt` or `ap`
-    Parameter.parse(ParameterType.String, "name=ltSomeName").isFailure shouldBe true
-    Parameter.parse(ParameterType.String, "name=apSomeName").isFailure shouldBe true
+    Parameter.parse(ParameterType.String, "name=ltSomeName").failed.get shouldBe a[UnsupportedPrefixException]
+    Parameter.parse(ParameterType.String, "name=apSomeName").failed.get shouldBe a[UnsupportedPrefixException]
   }
 }

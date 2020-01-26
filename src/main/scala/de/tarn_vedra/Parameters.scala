@@ -6,6 +6,13 @@ import scala.util.Try
 import scala.util.Success
 import scala.util.Failure
 
+final case class UnknownModifierException(val modifierString: String) 
+  extends RuntimeException(s"Unknown modifier $modifierString")
+final case class UnsupportedModifierException(val parameterType: ParameterType, val modifier: Modifier) 
+  extends RuntimeException(s"Unsupported modifier $modifier on ParameterType $parameterType")
+final case class UnsupportedPrefixException(val parameterType: ParameterType, val prefix: Prefix) 
+  extends RuntimeException(s"Unsupported prefix $prefix on ParameterType $parameterType")
+
 sealed trait ParameterType
 
 object ParameterType {
@@ -78,17 +85,15 @@ case class Parameter(
 
 object Parameter {
   def parse(parameterType: ParameterType, rawValue: String, lhs: String, rhs: String): Try[Parameter] = {
-    val (modifier: Option[Modifier], parameterName: String) = lhs.split(":") match {
+    val (modifier: Option[Modifier], parameterName: String) = lhs.split(":", 2) match {
       case Array(x) => (None, x)
       case Array(x, modifier) => {
         Modifier(modifier) match {
-          case None => return Failure(new RuntimeException(s"Invalid modifier $modifier"))
+          case None => return Failure(UnknownModifierException(modifier))
           case Some(modifier) if modifier.isSupportedBy(parameterType) => (Some(modifier), x)
-          case _ => return Failure(new RuntimeException(s"Modifier $modifier is not supported by ParameterType $parameterType"))
+          case Some(modifier) => return Failure(UnsupportedModifierException(parameterType, modifier))
         }
-        
       }
-      case _ => return Failure(new RuntimeException(s"Invalid parameter or modifier: ${lhs}"))
     }
 
     val (prefix, value) = rhs.size match {
@@ -96,7 +101,7 @@ object Parameter {
         Prefix(rhs.take(2)) match {
           case None => (None, rhs)
           case Some(p) if p.supportsParameterType(parameterType) => (p, rhs.drop(2))
-          case Some(prefix) => return Failure(new RuntimeException(s"Invalid prefix $prefix for ParameterType $parameterType"))
+          case Some(prefix) => return Failure(UnsupportedPrefixException(parameterType, prefix))
         }
         (Prefix(rhs.take(2)), rhs.drop(2))
       }
