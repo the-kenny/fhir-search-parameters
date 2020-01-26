@@ -16,15 +16,15 @@ final case class UnsupportedPrefixException(val parameterType: ParameterType, va
 sealed trait ParameterType
 
 object ParameterType {
-  case object Number extends ParameterType
-  case object Date extends ParameterType
-  case object String extends ParameterType
-  case object Token extends ParameterType
+  case object Number    extends ParameterType
+  case object Date      extends ParameterType
+  case object String    extends ParameterType
+  case object Token     extends ParameterType
   case object Reference extends ParameterType
   case object Composite extends ParameterType
-  case object Quantity extends ParameterType
-  case object Uri extends ParameterType
-  case object Special extends ParameterType
+  case object Quantity  extends ParameterType
+  case object Uri       extends ParameterType
+  case object Special   extends ParameterType
 
   val all = Set[ParameterType](Number, Date, String, Token, Reference, Composite, Quantity, Uri, Special)
 }
@@ -37,13 +37,13 @@ sealed class Modifier(val identifier: String, supportedParameterTypes: Set[Param
 
 object Modifier {
   // case class Missing(shouldBeMissing: Boolean) extends Modifier("missing") // TODO
-  case object Exact extends Modifier("exact", supportedParameterTypes = Set(ParameterType.String))
-  case object Contains extends Modifier("contains", supportedParameterTypes = Set(ParameterType.String))
-  case object Text extends Modifier("text", supportedParameterTypes = Set(ParameterType.Token))
-  case object In extends Modifier("in", supportedParameterTypes = Set(ParameterType.Token))
-  case object Below extends Modifier("below", supportedParameterTypes = Set(ParameterType.Reference, ParameterType.Token, ParameterType.Uri))
-  case object Above extends Modifier("above", supportedParameterTypes = Set(ParameterType.Reference, ParameterType.Token, ParameterType.Uri))
-  case object NotIn extends Modifier("not-in", supportedParameterTypes = Set(ParameterType.Token))
+  case object Exact      extends Modifier("exact",      supportedParameterTypes = Set(ParameterType.String))
+  case object Contains   extends Modifier("contains",   supportedParameterTypes = Set(ParameterType.String))
+  case object Text       extends Modifier("text",       supportedParameterTypes = Set(ParameterType.Token))
+  case object In         extends Modifier("in",         supportedParameterTypes = Set(ParameterType.Token))
+  case object Below      extends Modifier("below",      supportedParameterTypes = Set(ParameterType.Reference, ParameterType.Token, ParameterType.Uri))
+  case object Above      extends Modifier("above",      supportedParameterTypes = Set(ParameterType.Reference, ParameterType.Token, ParameterType.Uri))
+  case object NotIn      extends Modifier("not-in",     supportedParameterTypes = Set(ParameterType.Token))
   case object Identifier extends Modifier("identifier", supportedParameterTypes = Set(ParameterType.Reference))
   // case class ReferenceType(val resourceType: String) extends Modifier(resourceType) // TODO
 
@@ -59,15 +59,15 @@ sealed class Prefix(val identifier: String, val supportedParameterTypes: Set[Par
 object Prefix {
   private val orderedParameterTypes = Set[ParameterType](ParameterType.Number, ParameterType.Date, ParameterType.Quantity)
 
-  case object Equal extends Prefix("eq", supportedParameterTypes = ParameterType.all)
-  case object NotEqual extends Prefix("ne", supportedParameterTypes = orderedParameterTypes)
-  case object GreaterThan extends Prefix("gt", supportedParameterTypes = orderedParameterTypes)
-  case object LessThan extends Prefix("lt", supportedParameterTypes = orderedParameterTypes)
+  case object Equal          extends Prefix("eq", supportedParameterTypes = ParameterType.all)
+  case object NotEqual       extends Prefix("ne", supportedParameterTypes = orderedParameterTypes)
+  case object GreaterThan    extends Prefix("gt", supportedParameterTypes = orderedParameterTypes)
+  case object LessThan       extends Prefix("lt", supportedParameterTypes = orderedParameterTypes)
   case object GreaterOrEqual extends Prefix("ge", supportedParameterTypes = orderedParameterTypes)
-  case object LessOrEqual extends Prefix("le", supportedParameterTypes = orderedParameterTypes)
-  case object StartsAfter extends Prefix("sa", supportedParameterTypes = orderedParameterTypes)
-  case object EndsBefore extends Prefix("eb", supportedParameterTypes = orderedParameterTypes)
-  case object Approximately extends Prefix("ap", supportedParameterTypes = orderedParameterTypes)
+  case object LessOrEqual    extends Prefix("le", supportedParameterTypes = orderedParameterTypes)
+  case object StartsAfter    extends Prefix("sa", supportedParameterTypes = orderedParameterTypes)
+  case object EndsBefore     extends Prefix("eb", supportedParameterTypes = orderedParameterTypes)
+  case object Approximately  extends Prefix("ap", supportedParameterTypes = orderedParameterTypes)
 
   val all = Set[Prefix](Equal, NotEqual, GreaterThan, LessThan, GreaterOrEqual, LessOrEqual, StartsAfter, EndsBefore, Approximately) 
 
