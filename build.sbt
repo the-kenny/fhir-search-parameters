@@ -13,7 +13,6 @@ scalacOptions ++= Seq(
 lazy val root = (project in file("."))
   .settings(
     name := "fhir-search",
-    libraryDependencies += scalaUri,
     libraryDependencies += scalaTest % Test
   )
 

@@ -1,7 +1,5 @@
 package de.tarn_vedra.fhir.search
 
-import io.lemonlabs.uri.Uri
-import io.lemonlabs.uri.Url
 import scala.util.Try
 import scala.util.Success
 import scala.util.Failure
