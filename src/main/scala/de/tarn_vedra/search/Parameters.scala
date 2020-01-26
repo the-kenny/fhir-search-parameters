@@ -3,6 +3,9 @@ package de.tarn_vedra.fhir.search
 import scala.util.Try
 import scala.util.Success
 import scala.util.Failure
+import java.{util => ju}
+import scala.math.ScalaNumber
+import java.net.URI
 
 final case class UnknownModifierException(val modifierString: String) 
   extends RuntimeException(s"Unknown modifier $modifierString")
@@ -11,18 +14,37 @@ final case class UnsupportedModifierException(val parameterType: ParameterType, 
 final case class UnsupportedPrefixException(val parameterType: ParameterType, val prefix: Prefix) 
   extends RuntimeException(s"Unsupported prefix $prefix on ParameterType $parameterType")
 
-sealed trait ParameterType
+  
+object ValueType {
+  type String = java.lang.String
+  type Number = ScalaNumber
+  type Date = java.util.Date
+  type URI = java.net.URI
+  case class Composite(values: Map[String, (Prefix, String)])
+  case class Token(system: Option[String], code: Option[String])
+  case class Quantity(amount: Number, unit: String)
+  
+  sealed trait Reference
+  case class UriReference(val uri: URI)
+  case class IdReference(val id: String, val system: Option[String])
+}
+  
+sealed trait ParameterType {
+  type ValueType <: Any
+
+  // def parse(value: String): Try[ValueType]
+}
 
 object ParameterType {
-  case object Number    extends ParameterType
-  case object Date      extends ParameterType
-  case object String    extends ParameterType
-  case object Token     extends ParameterType
-  case object Reference extends ParameterType
-  case object Composite extends ParameterType
-  case object Quantity  extends ParameterType
-  case object Uri       extends ParameterType
-  case object Special   extends ParameterType
+  case object Number    extends ParameterType { override type ValueType = ValueType.Number }
+  case object Date      extends ParameterType { override type ValueType = ValueType.Date }
+  case object String    extends ParameterType { override type ValueType = ValueType.String }
+  case object Token     extends ParameterType { override type ValueType = ValueType.Token }
+  case object Reference extends ParameterType { override type ValueType = ValueType.Reference }
+  case object Composite extends ParameterType { override type ValueType = ValueType.Composite }
+  case object Quantity  extends ParameterType { override type ValueType = ValueType.Quantity }
+  case object Uri       extends ParameterType { override type ValueType = ValueType.URI }
+  case object Special   extends ParameterType { override type ValueType = ValueType.String }
 
   val all = Set[ParameterType](Number, Date, String, Token, Reference, Composite, Quantity, Uri, Special)
 }
@@ -72,17 +94,18 @@ object Prefix {
   def apply(modifier: String): Option[Prefix] = all.find(_.identifier == modifier)
 }
 
-case class Parameter(
+final case class Parameter[T <: ParameterType](
   rawValue: String, 
   name: String,
   parameterType: ParameterType, 
   modifier: Option[Modifier],
   prefix: Prefix,
-  value: String
+  value: String,
+  typedValue: T#ValueType
 )
 
 object Parameter {
-  def parse(parameterType: ParameterType, rawValue: String, lhs: String, rhs: String): Try[Parameter] = {
+  def parse[T <: ParameterType](parameterType: T, rawValue: String, lhs: String, rhs: String): Try[Parameter[T]] = {
     val (modifier: Option[Modifier], parameterName: String) = lhs.split(":", 2) match {
       case Array(x) => (None, x)
       case Array(x, modifier) => {
@@ -106,6 +129,12 @@ object Parameter {
       case _ => (None, rhs)
     }
 
+    val typedValue: T#ValueType = parameterType match {
+      case ParameterType.String => "foo".asInstanceOf[T#ValueType]
+      case ParameterType.Date => (new ju.Date()).asInstanceOf[T#ValueType]
+      case ParameterType.Number => 42.asInstanceOf[T#ValueType]
+    }
+
     Success(
       Parameter(
         rawValue = rawValue,
@@ -113,12 +142,13 @@ object Parameter {
         parameterType = parameterType,
         modifier = modifier,
         prefix = prefix.getOrElse(Prefix.Equal),
-        value = value
+        value = value,
+        typedValue = typedValue
       )
     )
   }
 
-  def parse(parameterType: ParameterType, rawValue: String): Try[Parameter] = {
+  def parse[T <: ParameterType](parameterType: T, rawValue: String): Try[Parameter[T]] = {
     rawValue.split("=") match {
       case Array(lhs, rhs) => parse(parameterType, rawValue, lhs, rhs)
     }

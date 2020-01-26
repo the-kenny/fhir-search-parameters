@@ -42,4 +42,9 @@ class ParameterSpec extends FlatSpec with Matchers {
     Parameter.parse(ParameterType.String, "name=ltSomeName").failed.get shouldBe a[UnsupportedPrefixException]
     Parameter.parse(ParameterType.String, "name=apSomeName").failed.get shouldBe a[UnsupportedPrefixException]
   }
+
+  "The experimental typedValue field" should "have the correct data type" in {
+    Parameter.parse(ParameterType.String, "name=SomeName").get.typedValue shouldBe a[String]
+    Parameter.parse(ParameterType.Date, "birthDate=1995-01-20").get.typedValue shouldBe a[java.util.Date]
+  }
 }
