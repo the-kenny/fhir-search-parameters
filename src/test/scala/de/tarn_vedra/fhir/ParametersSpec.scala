@@ -1,4 +1,4 @@
-package de.tarn_vedra
+package de.tarn_vedra.fhir.parameters
 
 import org.scalatest._
 import scala.util.Success

@@ -1,4 +1,4 @@
-package de.tarn_vedra
+package de.tarn_vedra.fhir.parameters
 
 import io.lemonlabs.uri.Uri
 import io.lemonlabs.uri.Url
