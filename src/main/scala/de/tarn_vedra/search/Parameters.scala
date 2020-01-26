@@ -6,6 +6,10 @@ import scala.util.Failure
 import java.{util => ju}
 import scala.math.ScalaNumber
 import java.net.URI
+import java.time.format.DateTimeFormatter
+import java.time.LocalDateTime
+import java.time.LocalDate
+import java.util.regex.Pattern
 
 final case class UnknownModifierException(val modifierString: String) 
   extends RuntimeException(s"Unknown modifier $modifierString")
@@ -18,7 +22,7 @@ final case class UnsupportedPrefixException(val parameterType: ParameterType, va
 object ValueType {
   type String = java.lang.String
   type Number = ScalaNumber
-  type Date = java.util.Date
+  type Date = String
   type URI = java.net.URI
   case class Composite(values: Map[String, (Prefix, String)])
   case class Token(system: Option[String], code: Option[String])
@@ -32,19 +36,54 @@ object ValueType {
 sealed trait ParameterType {
   type ValueType <: Any
 
-  // def parse(value: String): Try[ValueType]
+  def parse(value: String): Try[ValueType]
 }
 
 object ParameterType {
-  case object Number    extends ParameterType { override type ValueType = ValueType.Number }
-  case object Date      extends ParameterType { override type ValueType = ValueType.Date }
-  case object String    extends ParameterType { override type ValueType = ValueType.String }
-  case object Token     extends ParameterType { override type ValueType = ValueType.Token }
-  case object Reference extends ParameterType { override type ValueType = ValueType.Reference }
-  case object Composite extends ParameterType { override type ValueType = ValueType.Composite }
-  case object Quantity  extends ParameterType { override type ValueType = ValueType.Quantity }
-  case object Uri       extends ParameterType { override type ValueType = ValueType.URI }
-  case object Special   extends ParameterType { override type ValueType = ValueType.String }
+  case object Number extends ParameterType {
+    override type ValueType = ValueType.Number 
+    def parse(value: String): Try[ValueType] = Try(BigDecimal.apply(value))
+  }
+  
+  case object Date extends ParameterType {
+    override type ValueType = ValueType.Date 
+    def parse(value: String): Try[ValueType] = Success(value)
+  }
+  
+  case object String extends ParameterType {
+    override type ValueType = ValueType.String 
+    def parse(value: String): Try[ValueType] = Success(value)
+  }
+  
+  case object Token extends ParameterType {
+    override type ValueType = ValueType.Token 
+    def parse(value: String): Try[ValueType] = ???
+  }
+  
+  case object Reference extends ParameterType {
+    override type ValueType = ValueType.Reference 
+    def parse(value: String): Try[ValueType] = ???
+  }
+  
+  case object Composite extends ParameterType {
+    override type ValueType = ValueType.Composite 
+    def parse(value: String): Try[ValueType] = ???
+  }
+  
+  case object Quantity  extends ParameterType {
+    override type ValueType = ValueType.Quantity 
+    def parse(value: String): Try[ValueType] = ???
+  }
+  
+  case object Uri extends ParameterType {
+    override type ValueType = ValueType.URI 
+    def parse(value: String): Try[ValueType] = ???
+  }
+  
+  case object Special extends ParameterType {
+    override type ValueType = ValueType.String 
+    def parse(value: String): Try[ValueType] = ???
+  }
 
   val all = Set[ParameterType](Number, Date, String, Token, Reference, Composite, Quantity, Uri, Special)
 }
@@ -121,18 +160,16 @@ object Parameter {
       case n if n > 2 => {
         Prefix(rhs.take(2)) match {
           case None => (None, rhs)
-          case Some(p) if p.supportsParameterType(parameterType) => (p, rhs.drop(2))
+          case Some(p) if p.supportsParameterType(parameterType) => (Some(p), rhs.drop(2))
           case Some(prefix) => return Failure(UnsupportedPrefixException(parameterType, prefix))
         }
-        (Prefix(rhs.take(2)), rhs.drop(2))
       }
       case _ => (None, rhs)
     }
 
-    val typedValue: T#ValueType = parameterType match {
-      case ParameterType.String => "foo".asInstanceOf[T#ValueType]
-      case ParameterType.Date => (new ju.Date()).asInstanceOf[T#ValueType]
-      case ParameterType.Number => 42.asInstanceOf[T#ValueType]
+    val typedValue = parameterType.parse(value) match {
+      case Success(value) => value
+      case Failure(exception) => return Failure(exception)
     }
 
     Success(

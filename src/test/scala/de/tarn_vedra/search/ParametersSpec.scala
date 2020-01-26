@@ -2,6 +2,57 @@ package de.tarn_vedra.fhir.search
 
 import org.scalatest._
 import scala.util.Success
+import java.{util => ju}
+
+class ParameterTypeSpec extends FlatSpec with Matchers {
+  "The parse function of Number" should "parse numbers" in {
+    ParameterType.Number.parse("0") shouldBe Success(BigDecimal(0))
+    ParameterType.Number.parse("+100") shouldBe Success(BigDecimal(100))
+    ParameterType.Number.parse("-100") shouldBe Success(BigDecimal(-100))
+    ParameterType.Number.parse("3.14159") shouldBe Success(BigDecimal(3.14159))
+
+    ParameterType.Number.parse("asdf").isFailure shouldBe true
+    ParameterType.Number.parse("infinity").isFailure shouldBe true
+    ParameterType.Number.parse("").isFailure shouldBe true
+  }
+
+  "The parse function of Date" should "parse" ignore {
+    ???
+  }
+
+  "The parse function of Number" should "parse" ignore {
+    ???  
+  }
+
+  "The parse function of String" should "parse" ignore {
+    ???
+  }
+
+  "The parse function of Token" should "parse" ignore {
+    ???
+  }
+
+  "The parse function of Reference" should "parse" ignore {
+    ???
+  }
+
+  "The parse function of Composite" should "parse" ignore {
+    ???
+  }
+
+  "The parse function of Quantity" should "parse" ignore {
+    ???
+  }
+
+  "The parse function of Uri" should "parse" ignore {
+    ???
+  }
+
+  "The parse function of Special" should "parse" ignore {
+    ???
+  }
+
+}
 
 class ParameterSpec extends FlatSpec with Matchers {
   "The parse function" should "handle rawValue correctly" in {
@@ -44,7 +95,15 @@ class ParameterSpec extends FlatSpec with Matchers {
   }
 
   "The experimental typedValue field" should "have the correct data type" in {
+    Parameter.parse(ParameterType.Number, "age=42.5").get.typedValue shouldBe a[BigDecimal]
+    Parameter.parse(ParameterType.Number, "age=42.5").get.typedValue shouldBe BigDecimal(42.5)
+
     Parameter.parse(ParameterType.String, "name=SomeName").get.typedValue shouldBe a[String]
-    Parameter.parse(ParameterType.Date, "birthDate=1995-01-20").get.typedValue shouldBe a[java.util.Date]
+    Parameter.parse(ParameterType.String, "name=SomeName").get.typedValue shouldBe "SomeName"
+
+    Parameter.parse(ParameterType.Date, "birthDate=1995-01-20").get.typedValue shouldBe a[String]
+    Parameter.parse(ParameterType.Date, "birthDate=1995-01-20").get.typedValue shouldBe "1995-01-20"
+    Parameter.parse(ParameterType.Date, "birthDate=1995-01-").get.typedValue shouldBe "1995-01-"
+    Parameter.parse(ParameterType.Date, "birthDate=1995-").get.typedValue shouldBe "1995-"
   }
 }
