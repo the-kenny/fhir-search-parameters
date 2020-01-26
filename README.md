@@ -5,7 +5,7 @@ A standalone Scala implementation of [FHIR](http://hl7.org/fhir/) [search parame
 ## Usage
 
 ```scala
-import de.tarn-vedra.fhir.parameters._
+import de.tarn_vedra.fhir.search._
 
 val birthDate = Parameter.parse(ParameterType.Date, "birthDate=1995-08-25").get
 birthDate.name          == "birthDate"
