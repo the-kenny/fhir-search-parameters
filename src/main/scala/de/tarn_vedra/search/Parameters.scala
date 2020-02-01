@@ -21,7 +21,7 @@ final case class UnsupportedPrefixException(val parameterType: ParameterType, va
   
 object ValueType {
   type String = java.lang.String
-  type Number = ScalaNumber
+  case class Number(value: ScalaNumber, epsilon: Double)
   type Date = String
   type URI = java.net.URI
   case class Composite(values: Map[String, (Prefix, String)])
@@ -42,7 +42,19 @@ sealed trait ParameterType {
 object ParameterType {
   case object Number extends ParameterType {
     override type ValueType = ValueType.Number 
-    def parse(value: String): Try[ValueType] = Try(BigDecimal.apply(value))
+    def parse(string: String): Try[ValueType] = {
+      Try(BigDecimal.apply(string))
+      .map(value => {
+        val significantDigits = if(value.scale < 0) {
+          // Scientific Notation
+          string.takeWhile(_.toLower != 'e').filter(Character.isDigit).length-1
+        } else {
+          math.max(1.0, string.dropWhile(_ != '.').length)
+        }
+        val scale = 1.0 / math.pow(10, significantDigits)
+        ValueType.Number(value, 5 * scale)
+      })
+    }
   }
   
   case object Date extends ParameterType {

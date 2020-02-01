@@ -5,23 +5,39 @@ import scala.util.Success
 import java.{util => ju}
 
 class ParameterTypeSpec extends FlatSpec with Matchers {
-  "The parse function of Number" should "parse numbers" in {
-    ParameterType.Number.parse("0") shouldBe Success(BigDecimal(0))
-    ParameterType.Number.parse("+100") shouldBe Success(BigDecimal(100))
-    ParameterType.Number.parse("-100") shouldBe Success(BigDecimal(-100))
-    ParameterType.Number.parse("3.14159") shouldBe Success(BigDecimal(3.14159))
-
-    ParameterType.Number.parse("asdf").isFailure shouldBe true
-    ParameterType.Number.parse("infinity").isFailure shouldBe true
-    ParameterType.Number.parse("").isFailure shouldBe true
-  }
-
   "The parse function of Date" should "parse" ignore {
     ???
   }
 
-  "The parse function of Number" should "parse" ignore {
-    ???  
+  "The parse function of Number" should "parse" in {
+    import ParameterType.Number.parse
+    import ValueType.Number
+    
+    // [parameter]=100	Values that equal 100, to 3 significant figures precision, so this is actually searching for values in the range [99.5 ... 100.5)
+    parse("100").get shouldBe Number(BigDecimal(100), 0.5)
+    parse("-100").get shouldBe Number(BigDecimal(-100), 0.5)
+
+    parse("100.0").get shouldBe Number(BigDecimal(100), 0.05)
+    parse("-100.0").get shouldBe Number(BigDecimal(-100), 0.05)
+
+    // [parameter]=100.00	Values that equal 100, to 5 significant figures precision, so this is actually searching for values in the range [99.995 ... 100.005)
+    parse("100.00").get shouldBe Number(BigDecimal(100), 0.005)
+    parse("-100.00").get shouldBe Number(BigDecimal(-100), 0.005)
+
+    // [parameter]=1e2	Values that equal 100, to 1 significant figures precision, so this is actually searching for values in the range [95 ... 105)
+    parse("1e2").get shouldBe Number(BigDecimal(100), 5.0)
+    parse("-1e2").get shouldBe Number(BigDecimal(-100), 5.0)
+
+    parse("1.1e2").get shouldBe Number(BigDecimal(110), 0.5)
+    parse("-1.1e2").get shouldBe Number(BigDecimal(-110), 0.5)
+
+    parse("11931.34453245").get shouldBe Number(BigDecimal(11931.34453245), 0.000000005)
+    parse("0.34453245").get shouldBe Number(BigDecimal(0.34453245), 0.000000005)
+    parse("0.00000000001").get shouldBe Number(BigDecimal("0.00000000001"), 0.000000000005)
+                 
+    parse("asdf").isFailure shouldBe true
+    parse("infinity").isFailure shouldBe true
+    parse("").isFailure shouldBe true
   }
 
   "The parse function of String" should "parse" ignore {
@@ -95,8 +111,8 @@ class ParameterSpec extends FlatSpec with Matchers {
   }
 
   "The experimental typedValue field" should "have the correct data type" in {
-    Parameter.parse(ParameterType.Number, "age=42.5").get.typedValue shouldBe a[BigDecimal]
-    Parameter.parse(ParameterType.Number, "age=42.5").get.typedValue shouldBe BigDecimal(42.5)
+    Parameter.parse(ParameterType.Number, "age=42.5").get.typedValue shouldBe a[de.tarn_vedra.fhir.search.ValueType.Number]
+    Parameter.parse(ParameterType.Number, "age=42.5").get.typedValue shouldBe de.tarn_vedra.fhir.search.ValueType.Number(BigDecimal(42.5), 0.05)
 
     Parameter.parse(ParameterType.String, "name=SomeName").get.typedValue shouldBe a[String]
     Parameter.parse(ParameterType.String, "name=SomeName").get.typedValue shouldBe "SomeName"
