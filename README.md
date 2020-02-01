@@ -10,6 +10,7 @@ import de.tarn_vedra.fhir.search._
 val birthDate = Parameter.parse(ParameterType.Date, "birthDate=1995-08-25").get
 birthDate.name          == "birthDate"
 birthDate.value         == "1995-08-25"
+birthDate.typedValue    == ParameterValue.Date("1995-08-25")
 birthDate.parameterType == ParameterType.Date
 birthDate.prefix        == Prefix.Equal
 birthDate.modifier      == None
@@ -18,6 +19,7 @@ birthDate.rawValue      == "birthDate=1995-08-25"
 val name = Parameter.parse(ParameterType.String, "name=apFrank").get
 name.name          == "name"
 name.value         == "Frank"
+name.typedValue    == "Frank"
 name.parameterType == ParameterType.String
 name.prefix        == Prefix.Approximately
 name.modifier      == None
