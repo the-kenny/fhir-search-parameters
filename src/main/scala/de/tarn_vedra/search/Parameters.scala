@@ -22,7 +22,7 @@ final case class UnsupportedPrefixException(val parameterType: ParameterType, va
 object ValueType {
   type String = java.lang.String
   case class Number(value: ScalaNumber, epsilon: Double)
-  type Date = String
+  case class Date(value: String)
   type URI = java.net.URI
   case class Composite(values: Map[String, (Prefix, String)])
   case class Token(system: Option[String], code: Option[String])
@@ -59,7 +59,7 @@ object ParameterType {
   
   case object Date extends ParameterType {
     override type ValueType = ValueType.Date 
-    def parse(value: String): Try[ValueType] = Success(value)
+    def parse(value: String): Try[ValueType] = Success(ValueType.Date(value))
   }
   
   case object String extends ParameterType {

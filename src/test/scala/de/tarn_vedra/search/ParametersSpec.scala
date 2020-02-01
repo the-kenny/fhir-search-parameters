@@ -5,8 +5,28 @@ import scala.util.Success
 import java.{util => ju}
 
 class ParameterTypeSpec extends FlatSpec with Matchers {
-  "The parse function of Date" should "parse" ignore {
-    ???
+  "The parse function of Date" should "parse" in {
+    // yyyy-mm-ddThh:mm:ss[Z|(+|-)hh:mm]
+
+    import ParameterType.Date.parse
+    import ValueType.Date
+
+    val validDates = Seq(
+      "2013-01-01",
+      "2013-01-",
+      "2013-",
+      "2013-05-20T12:13:14Z",
+      "2013-05-20T12:13:14+2",
+      "2013-05-20T12:13:14-2",
+      "2013-05-20T12:13:14+0",
+      "2013-05-20T12:13:14-0",
+      "2013-05-20T12:13:14+10:15",
+      "2013-05-20T12:13:14-10:15",
+    )
+
+    validDates.foreach(date => {
+      parse(date) shouldBe Success(Date(date))
+    })
   }
 
   "The parse function of Number" should "parse" in {
@@ -111,15 +131,15 @@ class ParameterSpec extends FlatSpec with Matchers {
   }
 
   "The experimental typedValue field" should "have the correct data type" in {
-    Parameter.parse(ParameterType.Number, "age=42.5").get.typedValue shouldBe a[de.tarn_vedra.fhir.search.ValueType.Number]
-    Parameter.parse(ParameterType.Number, "age=42.5").get.typedValue shouldBe de.tarn_vedra.fhir.search.ValueType.Number(BigDecimal(42.5), 0.05)
+    Parameter.parse(ParameterType.Number, "age=42.5").get.typedValue shouldBe a[ValueType.Number]
+    Parameter.parse(ParameterType.Number, "age=42.5").get.typedValue shouldBe ValueType.Number(BigDecimal(42.5), 0.05)
 
-    Parameter.parse(ParameterType.String, "name=SomeName").get.typedValue shouldBe a[String]
+    Parameter.parse(ParameterType.String, "name=SomeName").get.typedValue shouldBe a[ValueType.String]
     Parameter.parse(ParameterType.String, "name=SomeName").get.typedValue shouldBe "SomeName"
 
-    Parameter.parse(ParameterType.Date, "birthDate=1995-01-20").get.typedValue shouldBe a[String]
-    Parameter.parse(ParameterType.Date, "birthDate=1995-01-20").get.typedValue shouldBe "1995-01-20"
-    Parameter.parse(ParameterType.Date, "birthDate=1995-01-").get.typedValue shouldBe "1995-01-"
-    Parameter.parse(ParameterType.Date, "birthDate=1995-").get.typedValue shouldBe "1995-"
+    Parameter.parse(ParameterType.Date, "birthDate=1995-01-20").get.typedValue shouldBe a[ValueType.Date]
+    Parameter.parse(ParameterType.Date, "birthDate=1995-01-20").get.typedValue shouldBe ValueType.Date("1995-01-20")
+    Parameter.parse(ParameterType.Date, "birthDate=1995-01-").get.typedValue shouldBe ValueType.Date("1995-01-")
+    Parameter.parse(ParameterType.Date, "birthDate=1995-").get.typedValue shouldBe ValueType.Date("1995-")
   }
 }
