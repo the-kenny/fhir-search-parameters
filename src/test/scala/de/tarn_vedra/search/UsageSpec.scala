@@ -5,7 +5,7 @@ import scala.util.Success
 import java.{util => ju}
 
 class UsageSpec extends FlatSpec with Matchers {
-  "The parse" should "behave ergonomical" in {
+  "The parse function" should "behave ergonomical" in {
     import de.tarn_vedra.fhir.search._
 
     val birthDate = Parameter.parse(ParameterType.Date, "birthDate=ap1995-08-25").get
@@ -24,6 +24,6 @@ class UsageSpec extends FlatSpec with Matchers {
     name.parameterType should equal(ParameterType.String)
     name.prefix        should equal(Prefix.Equal)
     name.modifier      should equal(Some(Modifier.Contains))
-    name.rawValue      should equal("name=apFrank")
+    name.rawValue      should equal("name:contains=Frank")
   }
 }
